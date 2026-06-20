@@ -1,8 +1,8 @@
-const bot = new Telegraf(process.env.BOT_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN');
+const { Telegraf } = require('telegraf');
 const cheerio = require('cheerio');
 
-// ضع هنا توكن البوت الخاص بك من BotFather
-const bot = new Telegraf('YOUR_TELEGRAM_BOT_TOKEN');
+// قراءة التوكن بأمان من إعدادات Render
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
 
 // ترويسة الطلبات لتجنب الحظر من المواقع
