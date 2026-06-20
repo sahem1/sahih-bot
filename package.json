@@ -1,7 +1,8 @@
 {
+  {
   "name": "sahih-bot",
   "version": "1.0.0",
-  "description": "صحيح الاستشهاد",
+  "description": "Bot for checking Hadith",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -11,6 +12,8 @@
     "cheerio": "^1.0.0-rc.12",
     "telegraf": "^4.16.3",
     "express": "^4.19.2"
+  }
+}
   }
   }
 }
