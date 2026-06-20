@@ -1,3 +1,14 @@
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+app.get('/', (req, res) => {
+    res.send('Bot is running safely!');
+});
+
+app.listen(PORT, () => {
+    console.log(`Port binding active on port ${PORT}`);
+});
 const { Telegraf } = require('telegraf');
 const axios = require('axios'); // تم إصلاح الاستدعاء هنا ليعمل البحث
 const cheerio = require('cheerio');
