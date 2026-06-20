@@ -1,5 +1,4 @@
-const { Telegraf } = require('telegraf');
-const axios = require('axios');
+const bot = new Telegraf(process.env.BOT_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN');
 const cheerio = require('cheerio');
 
 // ضع هنا توكن البوت الخاص بك من BotFather
