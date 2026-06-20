@@ -4,6 +4,7 @@ const cheerio = require('cheerio');
 // ضع هنا توكن البوت الخاص بك من BotFather
 const bot = new Telegraf('YOUR_TELEGRAM_BOT_TOKEN');
 
+
 // ترويسة الطلبات لتجنب الحظر من المواقع
 const AXIOS_CONFIG = {
     headers: {
