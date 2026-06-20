@@ -1,9 +1,9 @@
 const { Telegraf } = require('telegraf');
+const axios = require('axios'); // تم إصلاح الاستدعاء هنا ليعمل البحث
 const cheerio = require('cheerio');
 
-// قراءة التوكن بأمان من إعدادات Render
+// قراءة التوكن بأمان من إعدادات Render (تم حذف التكرار القديم)
 const bot = new Telegraf(process.env.BOT_TOKEN);
-
 
 // ترويسة الطلبات لتجنب الحظر من المواقع
 const AXIOS_CONFIG = {
@@ -14,34 +14,36 @@ const AXIOS_CONFIG = {
     timeout: 8000 // مهلة 8 ثوانٍ كحد أقصى للطلب
 };
 
-// 1. دالة البحث في الدرر السنية
+// 1. دالة البحث في الدرر السنية باستخدام الـ API الرسمي (حل مشكلة حظر الاتصال)
 async function searchDorar(query) {
     try {
-        const url = `https://dorar.net/hadith/search?q=${encodeURIComponent(query)}`;
-        const { data } = await axios.get(url, AXIOS_CONFIG);
-        const $ = cheerio.load(data);
-        const firstResult = $('.hadith-box').first();
+        const apiUrl = `https://dorar.net/api/v1/hadith/search?value=${encodeURIComponent(query)}`;
+        const { data } = await axios.get(apiUrl, AXIOS_CONFIG);
+        
+        // التحقق من وجود نتائج من الـ API
+        if (!data || !data.data || !data.data.hadiths || data.data.hadiths.length === 0) {
+            return "ℹ️ لم يتم العثور على نتائج حديثية في الدرر السنية.";
+        }
 
-        if (firstResult.length === 0) return "ℹ️ لم يتم العثور على نتائج حديثية.";
+        const firstHadith = data.data.hadiths[0];
+        const matn = firstHadith.hadith;
+        const info = `الراوي: ${firstHadith.rawi} | المحدث: ${firstHadith.mohadith} | الكتاب: ${firstHadith.kitab} | الصفحة أو الرقم: ${firstHadith.pgNum} | خلاصة حكم المحدث: ${firstHadith.hukm}`;
+        const sourceUrl = `https://dorar.net/hadith/search?q=${encodeURIComponent(query)}`;
 
-        const matn = firstResult.find('.hadith').text().trim();
-        const info = firstResult.find('.hadith-info').text().trim().replace(/\s+/g, ' ');
-
-        return `💬 **المتن:** "${matn}"\n📋 **التخريج:** ${info}\n🔗 [رابط المصدر](${url})`;
+        return `💬 **المتن:** "${matn}"\n📋 **التخريج:** ${info}\n🔗 [رابط المصدر](${sourceUrl})`;
     } catch (e) {
-        return "⚠️ تعذر الاتصال بالموقع حالياً.";
+        console.error("خطأ في الدرر السنية:", e.message);
+        return "⚠️ تعذر الاتصال بموقع الدرر السنية (حظر أو مهلة اتصالات).";
     }
 }
 
 // 2. دالة البحث في موقع صحيح الجامع (الألباني)
 async function searchSahihJami(query) {
     try {
-        // محاكاة استعلام البحث في الموقع
         const url = `http://sahih-jami.com/index.php?search=${encodeURIComponent(query)}`;
         const { data } = await axios.get(url, AXIOS_CONFIG);
         const $ = cheerio.load(data);
         
-        // جلب أول عنصر يحتوي على نص الحديث في الموقع
         const hadithText = $('.hadith_text, .result_box, #content').first().text().trim();
 
         if (!hadithText || hadithText.length < 5) {
@@ -61,7 +63,6 @@ async function searchSunnahOne(query) {
         const { data } = await axios.get(url, AXIOS_CONFIG);
         const $ = cheerio.load(data);
         
-        // جلب أول نتيجة من أمهات الكتب أو المتفق عليه
         const firstCard = $('.hadith-card, .result-item').first();
         
         if (firstCard.length === 0) return "ℹ️ لم يتم العثور على نتائج في أمهات الكتب التسعة.";
@@ -81,7 +82,7 @@ bot.start((ctx) => {
         `📌 **مرحباً بك في بوت (صحيح الاستشهاد)**\n\n` +
         `محرك بحث ذكي مخصص ومحصن للبحث في المصادر الشرعية والحديثية الموثوقة فقط.\n\n` +
         `🔍 **المصادر المدمجة الحالية:**\n` +
-        `1. الدرر السنية (الموسوعة الحديثية)\n` +
+        `1. الدرر السنية (الموسوعة الحديثية عبر الـ API المعزز)\n` +
         `2. صحيح الجامع (مؤلفات الشيخ الألباني)\n` +
         `3. جامع الكتب التسعة (البخاري ومسلم والسنن)\n` +
         `4. جامع السنة (فلتر المتفق عليه)\n\n` +
